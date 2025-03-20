@@ -1,85 +1,4 @@
-type Concat<A extends any[], B extends any[]> = [...A, ...B];
-
-type Length<A extends any[]> = A["length"] extends number ? A["length"] : never;
-
-type If<Exp extends boolean, Then, Else> = Exp extends true ? Then : Else;
-
-type ArrForLen<
-  L extends number,
-  Acc extends any[] = []
-> = Acc["length"] extends L ? Acc : ArrForLen<L, Concat<Acc, [any]>>;
-
-type ArrForLenNum<
-  L extends number,
-  Acc extends number[] = []
-> = Acc["length"] extends L
-  ? Acc
-  : ArrForLenNum<L, Concat<Acc, [Acc["length"]]>>;
-
-type Add<A extends number, B extends number> = Length<
-  Concat<ArrForLen<A>, ArrForLen<B>>
->;
-
-type Sub<A extends number, B extends number> = ArrForLen<A> extends [
-  ...ArrForLen<B>,
-  ...infer U
-]
-  ? Length<U>
-  : never;
-
-type Mul<
-  A extends number,
-  B extends number,
-  Acc extends number = 0
-> = B extends 0 ? Acc : Mul<A, Sub<B, 1>, Add<Acc, A>>;
-
-type Div<
-  A extends number,
-  B extends number,
-  Acc extends number = A,
-  Count extends number = 0
-> = Lte<A, B> extends true
-  ? 0
-  : Acc extends 0
-  ? Count
-  : Div<A, B, Sub<Acc, B>, Add<Count, 1>>;
-
-type DivFloor<
-  A extends number,
-  B extends number,
-  Acc extends number = A,
-  Count extends number = 0
-> = Lte<A, B> extends true
-  ? 0
-  : Acc extends 0
-  ? Count
-  : Lte<Sub<Acc, B>, B> extends true
-  ? Add<Count, 1>
-  : DivFloor<A, B, Sub<Acc, B>, Add<Count, 1>>;
-
-type Mod<A extends number, B extends number> = Sub<A, Mul<B, DivFloor<A, B>>>;
-
-type Eq<A, B> = A extends B ? true : false;
-
-type Gt<A extends number, B extends number> = Sub<A, B> extends 0
-  ? false
-  : true;
-
-type Gte<A extends number, B extends number> = If<
-  Gt<A, B>,
-  true,
-  If<Eq<A, B>, true, false>
->;
-
-type Lt<A extends number, B extends number> = Sub<B, A> extends 0
-  ? false
-  : true;
-
-type Lte<A extends number, B extends number> = If<
-  Lt<A, B>,
-  true,
-  If<Eq<A, B>, true, false>
->;
+import { Length, Add, Mul, Sub, ArrForLenNum, Mod, Rand } from "./Util";
 
 type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "F" | "M";
 
@@ -206,6 +125,8 @@ type OpenCell<
 
 type DrawCell<C extends Cell> = C["open"] extends false
   ? "⬜"
+  : C["num"] extends "M"
+  ? "💣"
   : C["num"] extends 0
   ? "🟦"
   : C["num"] extends 1
@@ -249,6 +170,8 @@ type DrawBoard<Cells extends Cell[]> = {
 type Settings = {
   rows: 3;
   columns: 3;
+  mines: 2;
+  seed: 6;
 };
 
 type MapCells<
@@ -256,12 +179,75 @@ type MapCells<
   Acc extends Cell[] = []
 > = Length<T> extends Length<Acc>
   ? Acc
-  : MapCells<T, [...Acc, { num: 0; open: false }]>;
+  : MapCells<T, [...Acc, { num: 0; open: true }]>;
 
-type MakeBoard = MapCells<
-  ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>
+// type Rand<Min extends number, Max extends number> =
+
+type IndexSwap<
+  List extends any[],
+  A extends number,
+  B extends number,
+  Acc extends any[] = []
+> = Length<List> extends Length<Acc>
+  ? Acc
+  : Length<Acc> extends A
+  ? IndexSwap<List, A, B, [...Acc, List[B]]>
+  : Length<Acc> extends B
+  ? IndexSwap<List, A, B, [...Acc, List[A]]>
+  : IndexSwap<List, A, B, [...Acc, List[Length<Acc>]]>;
+
+type FishShuffleInternal<
+  List extends number[],
+  Total extends number,
+  Seed extends number,
+  Count extends number = Length<List>,
+  Acc extends number[] = []
+> = Length<Acc> extends Total
+  ? Acc
+  : FishShuffleInternal<
+      IndexSwap<List, Rand<1, Count, Seed>, Count>,
+      Total,
+      Add<Seed, 1>,
+      Sub<Count, 1>,
+      [...Acc, List[Rand<1, Count, Seed>]]
+    >;
+
+type FishShuffle<
+  Max extends number,
+  Total extends number,
+  Seed extends number
+  //@ts-ignore
+> = FishShuffleInternal<ArrForLenNum<Max>, Total, Seed>;
+
+type PlaceMine<
+  C extends Cell[],
+  Index extends number,
+  Acc extends Cell[] = []
+> = Length<C> extends Length<Acc>
+  ? Acc
+  : Length<Acc> extends Index
+  ? PlaceMine<C, Index, [...Acc, UpdateCellVal<C[Length<Acc>], "M">]>
+  : PlaceMine<C, Index, [...Acc, C[Length<Acc>]]>;
+
+type PlaceMines<
+  C extends Cell[],
+  //@ts-ignore
+  Rand extends number[] = FishShuffle<
+    Length<C>,
+    Settings["mines"],
+    Settings["seed"]
+  >,
+  Count extends number = 0
+> = Count extends Settings["mines"]
+  ? C
+  : PlaceMines<PlaceMine<C, Rand[Count]>, Rand, Add<Count, 1>>;
+
+type MakeBoard = PlaceMines<
+  MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>
 >;
 
 type State = OpenCell<MakeBoard, 0, 0, Settings["rows"]>;
 
 type Display = DrawBoard<State>;
+
+// type R2 = Rand<1,1,15>
