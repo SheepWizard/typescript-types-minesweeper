@@ -1,4 +1,4 @@
-import { Length, Add, Mul, Sub, ArrForLenNum, Mod, Rand } from "./Util";
+import { Length, Add, Mul, Sub, ArrForLenNum, Rand } from "./Util";
 
 type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "F" | "M";
 
@@ -93,7 +93,7 @@ type OpenCell<
   Cells extends Cell[],
   Row extends number,
   Column extends number,
-  MaxRows extends number
+  MaxRows extends number = Settings["rows"]
 > = Cells[IndexGet<Row, Column, MaxRows>]["open"] extends true
   ? Cells
   : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends 0
@@ -116,6 +116,7 @@ type OpenCell<
       | 6
       | 7
       | 8
+      | "M"
   ? UpdateCellList<
       Cells,
       UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
@@ -164,14 +165,11 @@ type MapCellList<
     >;
 
 type DrawBoard<Cells extends Cell[]> = {
-  [Data in ArrForLenNum<3>[number]]: MapCellList<Cells, Data, 3>;
-};
-
-type Settings = {
-  rows: 3;
-  columns: 3;
-  mines: 2;
-  seed: 6;
+  [Data in ArrForLenNum<Settings["columns"]>[number]]: MapCellList<
+    Cells,
+    Data,
+    Settings["rows"]
+  >;
 };
 
 type MapCells<
@@ -179,9 +177,7 @@ type MapCells<
   Acc extends Cell[] = []
 > = Length<T> extends Length<Acc>
   ? Acc
-  : MapCells<T, [...Acc, { num: 0; open: true }]>;
-
-// type Rand<Min extends number, Max extends number> =
+  : MapCells<T, [...Acc, { num: 0; open: false }]>;
 
 type IndexSwap<
   List extends any[],
@@ -242,12 +238,26 @@ type PlaceMines<
   ? C
   : PlaceMines<PlaceMine<C, Rand[Count]>, Rand, Add<Count, 1>>;
 
-type MakeBoard = PlaceMines<
-  MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>
+type PlaceNumbers<
+  Cells extends Cell[],
+  Acc extends Cell[] = []
+> = Length<Cells> extends Length<Acc>
+  ? Acc
+  : PlaceNumbers<Cells, [...Acc, UpdateCellVal<Cells[Length<Acc>], "M">]>;
+
+type MakeBoard = PlaceNumbers<
+  PlaceMines<MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>>
 >;
 
-type State = OpenCell<MakeBoard, 0, 0, Settings["rows"]>;
+type Settings = {
+  rows: 10;
+  columns: 10;
+  mines: 20;
+  seed: 2;
+};
 
-type Display = DrawBoard<State>;
+type State = OpenCell<OpenCell<OpenCell<MakeBoard, 0, 2>, 3, 8>, 3, 4>;
+
+type Dislay = DrawBoard<State>;
 
 // type R2 = Rand<1,1,15>
