@@ -57,7 +57,7 @@ export type DivFloor<
   ? 0
   : Acc extends 0
   ? Count
-  : Lte<Sub<Acc, B>, B> extends true
+  : Lt<Sub<Acc, B>, B> extends true
   ? Add<Count, 1>
   : DivFloor<A, B, Sub<Acc, B>, Add<Count, 1>>;
 

@@ -1,24 +1,38 @@
-import { Length, Add, Mul, Sub, ArrForLenNum, Rand } from "./Util";
+import {
+  Length,
+  Add,
+  Mul,
+  Sub,
+  ArrForLenNum,
+  Rand,
+  Lte,
+  Mod,
+  DivFloor,
+  Div,
+} from "./Util";
 
 type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "F" | "M";
 
 type Cell = {
   num: CellVal;
   open: boolean;
+  neighbours: number[];
 };
 
 type UpdateCellVal<C extends Cell, Val extends CellVal> = {
   num: Val;
   open: C["open"];
+  neighbours: C["neighbours"];
 } extends Cell
-  ? { num: Val; open: C["open"] }
+  ? { num: Val; open: C["open"]; neighbours: C["neighbours"] }
   : never;
 
 type UpdateCellOpen<C extends Cell> = {
   num: C["num"];
   open: true;
+  neighbours: C["neighbours"];
 } extends Cell
-  ? { num: C["num"]; open: true }
+  ? { num: C["num"]; open: true; neighbours: C["neighbours"] }
   : never;
 
 type UpdateCellList<
@@ -172,12 +186,111 @@ type DrawBoard<Cells extends Cell[]> = {
   >;
 };
 
+type Index2<A extends number, MaxColumn extends number> = [
+  DivFloor<A, MaxColumn>,
+  Mod<A, MaxColumn>
+];
+
+type GetNeighbours<
+  Index extends number,
+  Row extends number,
+  Column extends number,
+  MaxRows extends number,
+  MaxColumns extends number
+> = Row extends 0
+  ? Column extends 0
+    ? [Add<Index, 1>, Add<Index, MaxColumns>, Add<Add<Index, MaxColumns>, 1>]
+    : Column extends Sub<MaxColumns, 1>
+    ? [Sub<Index, 1>, Add<Index, MaxColumns>, Sub<Add<Index, MaxColumns>, 1>]
+    : [
+        Add<Index, 1>,
+        Sub<Index, 1>,
+        Add<Index, MaxColumns>,
+        Sub<Add<Index, MaxColumns>, 1>,
+        Add<Add<Index, MaxColumns>, 1>
+      ]
+  : Column extends 0
+  ? Row extends Sub<MaxRows, 1>
+    ? [Add<Index, 1>, Sub<Index, MaxColumns>, Add<Sub<Index, MaxColumns>, 1>]
+    : [
+        Add<Index, 1>,
+        Add<Index, MaxColumns>,
+        Add<Add<Index, MaxColumns>, 1>,
+        Add<Sub<Index, MaxColumns>, 1>,
+        Sub<Index, MaxColumns>
+      ]
+  : Column extends Sub<MaxColumns, 1>
+  ? Row extends Sub<MaxRows, 1>
+    ? [Sub<Index, 1>, Sub<Index, MaxColumns>, Sub<Sub<Index, MaxColumns>, 1>]
+    : [
+        Sub<Index, 1>,
+        Sub<Sub<Index, MaxColumns>, 1>,
+        Sub<Index, MaxColumns>,
+        Sub<Sub<Index, MaxColumns>, 1>,
+        Sub<Add<Index, MaxColumns>, 1>,
+        Add<Index, MaxColumns>
+      ]
+  : Row extends Sub<MaxRows, 1>
+  ? [
+      Sub<Index, 1>,
+      Add<Index, 1>,
+      Sub<Sub<Index, MaxColumns>, 1>,
+      Add<Sub<Index, MaxColumns>, 1>,
+      Sub<Index, MaxColumns>
+    ]
+  : [
+      Sub<Index, 1>,
+      Add<Index, 1>,
+      Sub<Index, MaxColumns>,
+      Sub<Sub<Index, MaxColumns>, 1>,
+      Add<Sub<Index, MaxColumns>, 1>,
+      Add<Index, MaxColumns>,
+      Add<Add<Index, MaxColumns>, 1>,
+      Sub<Add<Index, MaxColumns>, 1>
+    ];
+
+type PlaceCellNumber<
+  Cells extends Cell[],
+  C extends Cell,
+  Count extends CellVal = 0,
+  Index extends number = 0
+> = Length<C["neighbours"]> extends Index
+  ? UpdateCellVal<C, Count>
+  : Cells[C["neighbours"][Index]]["num"] extends "M"
+  ? PlaceCellNumber<Cells, C, Add<Count, 1>, Add<Index, 1>>
+  : PlaceCellNumber<Cells, C, Count, Add<Index, 1>>;
+
+type PlaceNumbers<
+  Cells extends Cell[],
+  Acc extends Cell[] = []
+> = Length<Cells> extends Length<Acc>
+  ? Acc
+  : Cells[Length<Acc>]["num"] extends "M"
+  ? PlaceNumbers<Cells, [...Acc, Cells[Length<Acc>]]>
+  : PlaceNumbers<Cells, [...Acc, PlaceCellNumber<Cells, Cells[Length<Acc>]>]>;
+
 type MapCells<
   T extends number[],
   Acc extends Cell[] = []
 > = Length<T> extends Length<Acc>
   ? Acc
-  : MapCells<T, [...Acc, { num: 0; open: false }]>;
+  : MapCells<
+      T,
+      [
+        ...Acc,
+        {
+          num: 0;
+          open: true;
+          neighbours: GetNeighbours<
+            Length<Acc>,
+            Index2<Length<Acc>, Settings["columns"]>[0],
+            Index2<Length<Acc>, Settings["columns"]>[1],
+            Settings["rows"],
+            Settings["columns"]
+          >;
+        }
+      ]
+    >;
 
 type IndexSwap<
   List extends any[],
@@ -238,25 +351,20 @@ type PlaceMines<
   ? C
   : PlaceMines<PlaceMine<C, Rand[Count]>, Rand, Add<Count, 1>>;
 
-type PlaceNumbers<
-  Cells extends Cell[],
-  Acc extends Cell[] = []
-> = Length<Cells> extends Length<Acc>
-  ? Acc
-  : PlaceNumbers<Cells, [...Acc, UpdateCellVal<Cells[Length<Acc>], "M">]>;
+//PlaceNumbers<Cells, [...Acc, UpdateCellVal<Cells[Length<Acc>], "M">]>;
 
 type MakeBoard = PlaceNumbers<
   PlaceMines<MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>>
 >;
 
 type Settings = {
-  rows: 10;
-  columns: 10;
-  mines: 20;
-  seed: 2;
+  rows: 3;
+  columns: 3;
+  mines: 3;
+  seed: 4;
 };
 
-type State = OpenCell<OpenCell<OpenCell<MakeBoard, 0, 2>, 3, 8>, 3, 4>;
+type State = OpenCell<MakeBoard, 0, 1>;
 
 type Dislay = DrawBoard<State>;
 
