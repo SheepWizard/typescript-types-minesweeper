@@ -179,10 +179,10 @@ type MapCellList<
     >;
 
 type DrawBoard<Cells extends Cell[]> = {
-  [Data in ArrForLenNum<Settings["columns"]>[number]]: MapCellList<
+  [Data in ArrForLenNum<Settings["rows"]>[number]]: MapCellList<
     Cells,
     Data,
-    Settings["rows"]
+    Settings["columns"]
   >;
 };
 
@@ -280,7 +280,7 @@ type MapCells<
         ...Acc,
         {
           num: 0;
-          open: true;
+          open: false;
           neighbours: GetNeighbours<
             Length<Acc>,
             Index2<Length<Acc>, Settings["columns"]>[0],
@@ -351,21 +351,17 @@ type PlaceMines<
   ? C
   : PlaceMines<PlaceMine<C, Rand[Count]>, Rand, Add<Count, 1>>;
 
-//PlaceNumbers<Cells, [...Acc, UpdateCellVal<Cells[Length<Acc>], "M">]>;
-
 type MakeBoard = PlaceNumbers<
   PlaceMines<MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>>
 >;
 
 type Settings = {
-  rows: 3;
-  columns: 3;
-  mines: 3;
-  seed: 4;
+  rows: 8;
+  columns: 8;
+  mines: 10;
+  seed: 20;
 };
 
-type State = OpenCell<MakeBoard, 0, 1>;
+type State = OpenCell<OpenCell<OpenCell<MakeBoard, 0, 1>, 5, 5>, 5, 0>;
 
 type Dislay = DrawBoard<State>;
-
-// type R2 = Rand<1,1,15>
