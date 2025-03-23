@@ -5,10 +5,8 @@ import {
   Sub,
   ArrForLenNum,
   Rand,
-  Lte,
   Mod,
   DivFloor,
-  Div,
 } from "./Util";
 
 type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "F" | "M";
@@ -51,6 +49,12 @@ type IndexGet<
   Col extends number,
   MaxRows extends number
 > = Add<Mul<Row, MaxRows>, Col>;
+
+type OpenCellNeighbours2<
+  Cells extends Cell[],
+  Row extends number,
+  Column extends number
+> = [];
 
 type OpenCellNeighbours<
   Cells extends Cell[],
@@ -356,12 +360,12 @@ type MakeBoard = PlaceNumbers<
 >;
 
 type Settings = {
-  rows: 8;
-  columns: 8;
-  mines: 10;
-  seed: 20;
+  rows: 10;
+  columns: 10;
+  mines: 25;
+  seed: 6;
 };
 
-type State = OpenCell<OpenCell<OpenCell<MakeBoard, 0, 1>, 5, 5>, 5, 0>;
+type State = OpenCell<MakeBoard, 7, 1>;
 
 type Dislay = DrawBoard<State>;
