@@ -50,69 +50,18 @@ type IndexGet<
   MaxRows extends number
 > = Add<Mul<Row, MaxRows>, Col>;
 
-type OpenCellNeighbours<
-  Cells extends Cell[],
-  Row extends number,
-  Column extends number,
-  MaxRows extends number
-> =
-  //@ts-ignore
-  OpenCell<
-    //@ts-ignore
-    OpenCell<
-      //@ts-ignore
-      OpenCell<
-        //@ts-ignore
-        OpenCell<
-          //@ts-ignore
-          OpenCell<
-            //@ts-ignore
-            OpenCell<
-              //@ts-ignore
-              OpenCell<
-                //@ts-ignore
-                OpenCell<Cells, Add<Row, 1>, Column, MaxRows>,
-                Add<Row, 1>,
-                Add<Column, 1>,
-                MaxRows
-              >,
-              Row,
-              Add<Column, 1>,
-              MaxRows
-            >,
-            Sub<Row, 1>,
-            Add<Column, 1>,
-            MaxRows
-          >,
-          Sub<Row, 1>,
-          Column,
-          MaxRows
-        >,
-        Sub<Row, 1>,
-        Sub<Column, 1>,
-        MaxRows
-      >,
-      Row,
-      Sub<Column, 1>,
-      MaxRows
-    >,
-    Add<Row, 1>,
-    Sub<Column, 1>,
-    MaxRows
-  >;
-
-type N2<
+type OpenNeighbourCells<
   Cells extends Cell[],
   Neighbours extends number[],
-  Count extends number = 0
+  Count extends number = 0,
+  CurrIndex extends [number, number] = Index2<
+    Neighbours[Count],
+    Settings["columns"]
+  >
 > = Count extends Length<Neighbours>
   ? Cells
-  : N2<
-      OpenCell<
-        Cells,
-        Index2<Neighbours[Count], 8>[0],
-        Index2<Neighbours[Count], 8>[1]
-      >,
+  : OpenNeighbourCells<
+      OpenCell<Cells, CurrIndex[0], CurrIndex[1]>,
       Neighbours,
       Add<Count, 1>
     >;
@@ -121,33 +70,17 @@ type OpenCell<
   Cells extends Cell[],
   Row extends number,
   Column extends number,
-  MaxRows extends number = Settings["rows"]
-> = Cells[IndexGet<Row, Column, MaxRows>]["open"] extends true
+  MaxRows extends number = Settings["rows"],
+  CurrIndex extends number = IndexGet<Row, Column, MaxRows>
+> = Cells[CurrIndex]["open"] extends true
   ? Cells
-  : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends 0
-  ? N2<
-      UpdateCellList<
-        Cells,
-        UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
-        IndexGet<Row, Column, MaxRows>
-      >,
-      Cells[IndexGet<Row, Column, MaxRows>]["neighbours"]
+  : Cells[CurrIndex]["num"] extends 0
+  ? OpenNeighbourCells<
+      UpdateCellList<Cells, UpdateCellOpen<Cells[CurrIndex]>, CurrIndex>,
+      Cells[CurrIndex]["neighbours"]
     >
-  : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5
-      | 6
-      | 7
-      | 8
-      | "M"
-  ? UpdateCellList<
-      Cells,
-      UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
-      IndexGet<Row, Column, MaxRows>
-    >
+  : Cells[CurrIndex]["num"] extends 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "M"
+  ? UpdateCellList<Cells, UpdateCellOpen<Cells[CurrIndex]>, CurrIndex>
   : Cells;
 
 type DrawCell<C extends Cell> = C["open"] extends false
@@ -238,7 +171,6 @@ type GetNeighbours<
         Sub<Index, 1>,
         Sub<Sub<Index, MaxColumns>, 1>,
         Sub<Index, MaxColumns>,
-        Sub<Sub<Index, MaxColumns>, 1>,
         Sub<Add<Index, MaxColumns>, 1>,
         Add<Index, MaxColumns>
       ]
@@ -283,7 +215,8 @@ type PlaceNumbers<
 
 type MapCells<
   T extends number[],
-  Acc extends Cell[] = []
+  Acc extends Cell[] = [],
+  CurrIndex extends [number, number] = Index2<Length<Acc>, Settings["columns"]>
 > = Length<T> extends Length<Acc>
   ? Acc
   : MapCells<
@@ -295,8 +228,8 @@ type MapCells<
           open: false;
           neighbours: GetNeighbours<
             Length<Acc>,
-            Index2<Length<Acc>, Settings["columns"]>[0],
-            Index2<Length<Acc>, Settings["columns"]>[1],
+            CurrIndex[0],
+            CurrIndex[1],
             Settings["rows"],
             Settings["columns"]
           >;
@@ -368,10 +301,10 @@ type MakeBoard = PlaceNumbers<
 >;
 
 type Settings = {
-  rows: 8;
-  columns: 8;
-  mines: 5;
-  seed: 6;
+  rows: 5;
+  columns: 5;
+  mines: 4;
+  seed: 2;
 };
 
 type State = OpenCell<MakeBoard, 5, 6>;

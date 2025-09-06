@@ -8,10 +8,10 @@ const plays: Array<[number, number]> = [];
 
 function settings() {
   return `type Settings = {
-  rows: 8;
-  columns: 8;
-  mines: 5;
-  seed: 6;
+  rows: 9;
+  columns: 9;
+  mines: 10;
+  seed: 1;
 };`;
 }
 function getPlays() {

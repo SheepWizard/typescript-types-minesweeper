@@ -53,7 +53,9 @@ export type DivFloor<
   B extends number,
   Acc extends number = A,
   Count extends number = 0
-> = Lte<A, B> extends true
+> = Eq<A, B> extends true
+  ? 1
+  : Lte<A, B> extends true
   ? 0
   : Acc extends 0
   ? Count

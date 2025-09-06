@@ -55,7 +55,9 @@ export type DivFloor<
   B extends number,
   Acc extends number = A,
   Count extends number = 0
-> = Lte<A, B> extends true
+> = Eq<A, B> extends true
+  ? 1
+  : Lte<A, B> extends true
   ? 0
   : Acc extends 0
   ? Count
@@ -138,58 +140,6 @@ type IndexGet<
   MaxRows extends number
 > = Add<Mul<Row, MaxRows>, Col>;
 
-
-type OpenCellNeighbours<
-  Cells extends Cell[],
-  Row extends number,
-  Column extends number,
-  MaxRows extends number
-> =
-  //@ts-ignore
-  OpenCell<
-    //@ts-ignore
-    OpenCell<
-      //@ts-ignore
-      OpenCell<
-        //@ts-ignore
-        OpenCell<
-          //@ts-ignore
-          OpenCell<
-            //@ts-ignore
-            OpenCell<
-              //@ts-ignore
-              OpenCell<
-                //@ts-ignore
-                OpenCell<Cells, Add<Row, 1>, Column, MaxRows>,
-                Add<Row, 1>,
-                Add<Column, 1>,
-                MaxRows
-              >,
-              Row,
-              Add<Column, 1>,
-              MaxRows
-            >,
-            Sub<Row, 1>,
-            Add<Column, 1>,
-            MaxRows
-          >,
-          Sub<Row, 1>,
-          Column,
-          MaxRows
-        >,
-        Sub<Row, 1>,
-        Sub<Column, 1>,
-        MaxRows
-      >,
-      Row,
-      Sub<Column, 1>,
-      MaxRows
-    >,
-    Add<Row, 1>,
-    Sub<Column, 1>,
-    MaxRows
-  >;
-
 type N2<
   Cells extends Cell[],
   Neighbours extends number[],
@@ -199,8 +149,8 @@ type N2<
   : N2<
       OpenCell<
         Cells,
-        Index2<Neighbours[Count], 8>[0],
-        Index2<Neighbours[Count], 8>[1]
+        Index2<Neighbours[Count], Settings["columns"]>[0],
+        Index2<Neighbours[Count], Settings["columns"]>[1]
       >,
       Neighbours,
       Add<Count, 1>
@@ -301,7 +251,12 @@ type GetNeighbours<
   MaxColumns extends number
 > = Row extends 0
   ? Column extends 0
-    ? [Add<Index, 1>, Add<Index, MaxColumns>, Add<Add<Index, MaxColumns>, 1>]
+    ? [
+            Add<Index, 1>,
+            Add<Index, MaxColumns>,
+            Add<Add<Index, MaxColumns>, 1>,
+            Add<Sub<Index, MaxColumns>, 1>
+          ]
     : Column extends Sub<MaxColumns, 1>
     ? [Sub<Index, 1>, Add<Index, MaxColumns>, Sub<Add<Index, MaxColumns>, 1>]
     : [
@@ -328,7 +283,6 @@ type GetNeighbours<
         Sub<Index, 1>,
         Sub<Sub<Index, MaxColumns>, 1>,
         Sub<Index, MaxColumns>,
-        Sub<Sub<Index, MaxColumns>, 1>,
         Sub<Add<Index, MaxColumns>, 1>,
         Add<Index, MaxColumns>
       ]
