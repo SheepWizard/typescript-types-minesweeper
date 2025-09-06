@@ -44,11 +44,10 @@ type UpdateCellList<
   ? UpdateCellList<Cells, C, Idx, [...Acc, C]>
   : UpdateCellList<Cells, C, Idx, [...Acc, Cells[Length<Acc>]]>;
 
-type IndexGet<
-  Row extends number,
-  Col extends number,
-  MaxRows extends number
-> = Add<Mul<Row, MaxRows>, Col>;
+type IndexGet<Row extends number, Col extends number> = Add<
+  Mul<Row, Settings["columns"]>,
+  Col
+>;
 
 type OpenNeighbourCells<
   Cells extends Cell[],
@@ -70,8 +69,7 @@ type OpenCell<
   Cells extends Cell[],
   Row extends number,
   Column extends number,
-  MaxRows extends number = Settings["rows"],
-  CurrIndex extends number = IndexGet<Row, Column, MaxRows>
+  CurrIndex extends number = IndexGet<Row, Column>
 > = Cells[CurrIndex]["open"] extends true
   ? Cells
   : Cells[CurrIndex]["num"] extends 0
@@ -302,12 +300,12 @@ type MakeBoard = PlaceNumbers<
 
 type Settings = {
   rows: 5;
-  columns: 5;
+  columns: 3;
   mines: 4;
-  seed: 2;
+  seed: 1;
 };
 
-type State = OpenCell<MakeBoard, 5, 6>;
+type State = OpenCell<MakeBoard, 2, 0>;
 
 type Dislay = DrawBoard<State>;
 

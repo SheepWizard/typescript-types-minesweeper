@@ -1,18 +1,34 @@
 import "./style.css";
 
-import output from "./stuff";
+import output from "./raw";
 
 import { Project, TypeFormatFlags } from "ts-morph";
 
 const plays: Array<[number, number]> = [];
+const app = document.getElementById("app")!;
+const settings = {
+  rows: 5,
+  columns: 3,
+  mines: 4,
+  seed: 1,
+};
 
-function settings() {
+function addPlay(x: number, y: number) {
+  const found = plays.some(([x2, y2]) => x2 === x && y2 === y);
+  if (found) {
+    return;
+  }
+  plays.push([x, y]);
+  start(app);
+}
+
+function getSettings() {
   return `type Settings = {
-  rows: 9;
-  columns: 9;
-  mines: 10;
-  seed: 1;
-};`;
+    rows: ${settings.rows};
+    columns: ${settings.columns};
+    mines: ${settings.mines};
+    seed: ${settings.seed};
+  };`;
 }
 function getPlays() {
   let board = "MakeBoard";
@@ -22,42 +38,41 @@ function getPlays() {
     `;
   });
 
-  return `type State = ${board}`;
+  return `${board}`;
 }
 
-function run() {
-  const project = new Project({ useInMemoryFileSystem: true });
-  console.log(getPlays());
-  const sourceFile = project.createSourceFile(
-    "files.ts",
-    `${output} ${settings()} 
-    ${getPlays()}
-    type Dislay = DrawBoard<State>;
+const project = new Project({ useInMemoryFileSystem: true });
+const sourceFile = project.createSourceFile(
+  "files.ts",
+  `${output} ${getSettings()} 
+  type State = MakeBoard;
+  type Dislay = DrawBoard<State>;
+  const d: Dislay;`
+);
 
-    const d: Dislay;`
-  );
-  sourceFile.saveSync();
+function run() {
+  const state = sourceFile.getTypeAlias("State");
+  state?.setType(getPlays());
 
   const varDec = sourceFile.getVariableDeclarationOrThrow("d");
-
   const n = varDec
     .getType()
     .getText(undefined, TypeFormatFlags.InTypeAlias)
     .split('"');
 
-  const b = n.filter((_, index) => index % 2 !== 0);
+  const filtered = n.filter((_, index) => index % 2 !== 0);
 
-  return b;
+  return filtered;
 }
 
 function start(app: HTMLElement) {
   app.innerHTML = "";
-  const b = run();
-  console.log(b);
-  b.forEach((a, i1) => {
+  const result = run();
+  result.forEach((a, i1) => {
     const div = document.createElement("div");
     a.split("").forEach((x, i2) => {
       const button = document.createElement("button");
+      button.classList.add("cellButton");
       switch (x) {
         case "1":
           button.setAttribute("data-state", "1");
@@ -94,8 +109,7 @@ function start(app: HTMLElement) {
           break;
       }
       button.addEventListener("click", () => {
-        plays.push([i1, i2]);
-        start(app);
+        addPlay(i1, i2);
       });
       div.appendChild(button);
     });
@@ -103,7 +117,7 @@ function start(app: HTMLElement) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const app = document.getElementById("app")!;
+document.addEventListener("DOMContentLoaded", async () => {
   start(app);
+  document.getElementById("newGame")?.addEventListener("click", () => {});
 });

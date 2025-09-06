@@ -134,60 +134,41 @@ type UpdateCellList<
   ? UpdateCellList<Cells, C, Idx, [...Acc, C]>
   : UpdateCellList<Cells, C, Idx, [...Acc, Cells[Length<Acc>]]>;
 
-type IndexGet<
-  Row extends number,
-  Col extends number,
-  MaxRows extends number
-> = Add<Mul<Row, MaxRows>, Col>;
+type IndexGet<Row extends number, Col extends number> = Add<
+  Mul<Row, Settings["columns"]>,
+  Col
+>;
 
-type N2<
+type OpenNeighbourCells<
   Cells extends Cell[],
   Neighbours extends number[],
-  Count extends number = 0
+  Count extends number = 0,
+  CurrIndex extends [number, number] = Index2<
+    Neighbours[Count],
+    Settings["columns"]
+  >
 > = Count extends Length<Neighbours>
   ? Cells
-  : N2<
-      OpenCell<
-        Cells,
-        Index2<Neighbours[Count], Settings["columns"]>[0],
-        Index2<Neighbours[Count], Settings["columns"]>[1]
-      >,
+  : OpenNeighbourCells<
+      OpenCell<Cells, CurrIndex[0], CurrIndex[1]>,
       Neighbours,
       Add<Count, 1>
     >;
-
 
 type OpenCell<
   Cells extends Cell[],
   Row extends number,
   Column extends number,
-  MaxRows extends number = Settings["rows"]
-> = Cells[IndexGet<Row, Column, MaxRows>]["open"] extends true
+  CurrIndex extends number = IndexGet<Row, Column>
+> = Cells[CurrIndex]["open"] extends true
   ? Cells
-  : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends 0
-  ? N2<
-      UpdateCellList<
-        Cells,
-        UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
-        IndexGet<Row, Column, MaxRows>
-      >,
-      Cells[IndexGet<Row, Column, MaxRows>]["neighbours"]
+  : Cells[CurrIndex]["num"] extends 0
+  ? OpenNeighbourCells<
+      UpdateCellList<Cells, UpdateCellOpen<Cells[CurrIndex]>, CurrIndex>,
+      Cells[CurrIndex]["neighbours"]
     >
-  : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5
-      | 6
-      | 7
-      | 8
-      | "M"
-  ? UpdateCellList<
-      Cells,
-      UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
-      IndexGet<Row, Column, MaxRows>
-    >
+  : Cells[CurrIndex]["num"] extends 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "M"
+  ? UpdateCellList<Cells, UpdateCellOpen<Cells[CurrIndex]>, CurrIndex>
   : Cells;
 
 type DrawCell<C extends Cell> = C["open"] extends false
@@ -213,6 +194,7 @@ type DrawCell<C extends Cell> = C["open"] extends false
   : C["num"] extends 8
   ? "8"
   : "";
+
 
 type MapCellList<
   Cells extends Cell[],
@@ -251,12 +233,7 @@ type GetNeighbours<
   MaxColumns extends number
 > = Row extends 0
   ? Column extends 0
-    ? [
-            Add<Index, 1>,
-            Add<Index, MaxColumns>,
-            Add<Add<Index, MaxColumns>, 1>,
-            Add<Sub<Index, MaxColumns>, 1>
-          ]
+    ? [Add<Index, 1>, Add<Index, MaxColumns>, Add<Add<Index, MaxColumns>, 1>]
     : Column extends Sub<MaxColumns, 1>
     ? [Sub<Index, 1>, Add<Index, MaxColumns>, Sub<Add<Index, MaxColumns>, 1>]
     : [
@@ -327,7 +304,8 @@ type PlaceNumbers<
 
 type MapCells<
   T extends number[],
-  Acc extends Cell[] = []
+  Acc extends Cell[] = [],
+  CurrIndex extends [number, number] = Index2<Length<Acc>, Settings["columns"]>
 > = Length<T> extends Length<Acc>
   ? Acc
   : MapCells<
@@ -339,8 +317,8 @@ type MapCells<
           open: false;
           neighbours: GetNeighbours<
             Length<Acc>,
-            Index2<Length<Acc>, Settings["columns"]>[0],
-            Index2<Length<Acc>, Settings["columns"]>[1],
+            CurrIndex[0],
+            CurrIndex[1],
             Settings["rows"],
             Settings["columns"]
           >;
@@ -410,7 +388,6 @@ type PlaceMines<
 type MakeBoard = PlaceNumbers<
   PlaceMines<MapCells<ArrForLenNum<Mul<Settings["rows"], Settings["columns"]>>>>
 >;
-
 
 
 `;

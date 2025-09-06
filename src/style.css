@@ -67,45 +67,48 @@ button {
   width: 50px;
   height: 50px;
   text-align: center;
-  border: solid 1px red;
+}
+
+.cellButton {
   background-size: cover;
-
+  
   &[data-state="hidden"] {
-    background-image: url("cell_hidden.png");
+    background-image: url("/cell_hidden.png");
   }
-
+  
+  &:not([data-state="hidden"]) {
+    cursor: default;
+  }
+  
   &[data-state="1"] {
-    background-image: url("cell_1.png");
+    background-image: url("/cell_1.png");
   }
   &[data-state="2"] {
-    background-image: url("cell_2.png");
+    background-image: url("/cell_2.png");
   }
   &[data-state="3"] {
-    background-image: url("cell_3.png");
+    background-image: url("/cell_3.png");
   }
   &[data-state="4"] {
-    background-image: url("cell_4.png");
+    background-image: url("/cell_4.png");
   }
   &[data-state="5"] {
-    background-image: url("cell_5.png");
+    background-image: url("/cell_5.png");
   }
   &[data-state="6"] {
-    background-image: url("cell_6.png");
+    background-image: url("/cell_6.png");
   }
   &[data-state="7"] {
-    background-image: url("cell_7.png");
+    background-image: url("/cell_7.png");
   }
   &[data-state="8"] {
-    background-image: url("cell_8.png");
+    background-image: url("/cell_8.png");
   }
   &[data-state="open"] {
-    background-image: url("cell_open.png");
-  }
-  &[data-state="open"] {
-    background-image: url("cell_open.png");
+    background-image: url("/cell_open.png");
   }
   &[data-state="mine"] {
-    background-image: url("cell_mine.png");
+    background-image: url("/cell_mine.png");
   }
-
+  
 }
