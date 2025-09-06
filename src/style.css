@@ -1,0 +1,111 @@
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin */
+* {
+  margin: 0;
+}
+
+/* 3. Enable keyword animations */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+body {
+  /* 4. Add accessible line-height */
+  line-height: 1.5;
+  /* 5. Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 6. Improve media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* 7. Inherit fonts for form controls */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 8. Avoid text overflows */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+/* 9. Improve line wrapping */
+p {
+  text-wrap: pretty;
+}
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/*
+  10. Create a root stacking context
+*/
+#root, #__next {
+  isolation: isolate;
+}
+
+button {
+  -webkit-appearance: none;
+  border-radius: 0;
+  text-align: inherit;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  color: inherit;
+  font: inherit;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  border: solid 1px red;
+  background-size: cover;
+
+  &[data-state="hidden"] {
+    background-image: url("cell_hidden.png");
+  }
+
+  &[data-state="1"] {
+    background-image: url("cell_1.png");
+  }
+  &[data-state="2"] {
+    background-image: url("cell_2.png");
+  }
+  &[data-state="3"] {
+    background-image: url("cell_3.png");
+  }
+  &[data-state="4"] {
+    background-image: url("cell_4.png");
+  }
+  &[data-state="5"] {
+    background-image: url("cell_5.png");
+  }
+  &[data-state="6"] {
+    background-image: url("cell_6.png");
+  }
+  &[data-state="7"] {
+    background-image: url("cell_7.png");
+  }
+  &[data-state="8"] {
+    background-image: url("cell_8.png");
+  }
+  &[data-state="open"] {
+    background-image: url("cell_open.png");
+  }
+  &[data-state="open"] {
+    background-image: url("cell_open.png");
+  }
+  &[data-state="mine"] {
+    background-image: url("cell_mine.png");
+  }
+
+}

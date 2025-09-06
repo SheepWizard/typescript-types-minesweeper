@@ -50,12 +50,6 @@ type IndexGet<
   MaxRows extends number
 > = Add<Mul<Row, MaxRows>, Col>;
 
-type OpenCellNeighbours2<
-  Cells extends Cell[],
-  Row extends number,
-  Column extends number
-> = [];
-
 type OpenCellNeighbours<
   Cells extends Cell[],
   Row extends number,
@@ -107,6 +101,22 @@ type OpenCellNeighbours<
     MaxRows
   >;
 
+type N2<
+  Cells extends Cell[],
+  Neighbours extends number[],
+  Count extends number = 0
+> = Count extends Length<Neighbours>
+  ? Cells
+  : N2<
+      OpenCell<
+        Cells,
+        Index2<Neighbours[Count], 8>[0],
+        Index2<Neighbours[Count], 8>[1]
+      >,
+      Neighbours,
+      Add<Count, 1>
+    >;
+
 type OpenCell<
   Cells extends Cell[],
   Row extends number,
@@ -115,15 +125,13 @@ type OpenCell<
 > = Cells[IndexGet<Row, Column, MaxRows>]["open"] extends true
   ? Cells
   : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends 0
-  ? OpenCellNeighbours<
+  ? N2<
       UpdateCellList<
         Cells,
         UpdateCellOpen<Cells[IndexGet<Row, Column, MaxRows>]>,
         IndexGet<Row, Column, MaxRows>
       >,
-      Row,
-      Column,
-      MaxRows
+      Cells[IndexGet<Row, Column, MaxRows>]["neighbours"]
     >
   : Cells[IndexGet<Row, Column, MaxRows>]["num"] extends
       | 1
@@ -360,12 +368,14 @@ type MakeBoard = PlaceNumbers<
 >;
 
 type Settings = {
-  rows: 10;
-  columns: 10;
-  mines: 25;
+  rows: 8;
+  columns: 8;
+  mines: 5;
   seed: 6;
 };
 
-type State = OpenCell<MakeBoard, 7, 1>;
+type State = OpenCell<MakeBoard, 5, 6>;
 
 type Dislay = DrawBoard<State>;
+
+const d: Dislay;
