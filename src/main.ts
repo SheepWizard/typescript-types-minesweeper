@@ -6,11 +6,16 @@ import { Project, TypeFormatFlags } from "ts-morph";
 
 const plays: Array<[number, number]> = [];
 const app = document.getElementById("app")!;
+
+function getSeed() {
+  return Math.floor(Math.random() * 30);
+}
+
 const settings = {
-  rows: 5,
-  columns: 3,
-  mines: 4,
-  seed: 1,
+  rows: 9,
+  columns: 9,
+  mines: 10,
+  seed: getSeed(),
 };
 
 function addPlay(x: number, y: number) {
@@ -70,6 +75,7 @@ function start(app: HTMLElement) {
   const result = run();
   result.forEach((a, i1) => {
     const div = document.createElement("div");
+    div.classList.add("cellRow");
     a.split("").forEach((x, i2) => {
       const button = document.createElement("button");
       button.classList.add("cellButton");

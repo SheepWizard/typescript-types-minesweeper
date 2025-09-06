@@ -16,10 +16,11 @@
 }
 
 body {
-  /* 4. Add accessible line-height */
-  line-height: 1.5;
-  /* 5. Improve text rendering */
+  height: 100vh;
   -webkit-font-smoothing: antialiased;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background-color: rgb(44, 44, 44);
 }
 
 /* 6. Improve media defaults */
@@ -36,12 +37,22 @@ input, button, textarea, select {
 /* 8. Avoid text overflows */
 p, h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
+  color: white;
+  font-family: monospace;
 }
 
-/* 9. Improve line wrapping */
+a {
+  color: hotpink;
+  &:visited {
+    color: pink;
+  }
+}
+
 p {
   text-wrap: pretty;
+  font-size: 18px;
 }
+
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
 }
@@ -64,14 +75,40 @@ button {
   border: none;
   color: inherit;
   font: inherit;
-  width: 50px;
-  height: 50px;
   text-align: center;
+}
+
+.wrapper {
+  width: min(700px, 100% - 16px);
+  margin-inline: auto;
+  text-align: center;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+   width: min(500px, 100% - 16px);
+  margin-inline: auto;
+}
+
+.cellRow {
+  display: flex;
+  width: 100%;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  font-size: 14px;
 }
 
 .cellButton {
   background-size: cover;
-  
+  aspect-ratio: 1 / 1;
+  flex-grow: 1;
   &[data-state="hidden"] {
     background-image: url("/cell_hidden.png");
   }
@@ -109,6 +146,5 @@ button {
   }
   &[data-state="mine"] {
     background-image: url("/cell_mine.png");
-  }
-  
+  } 
 }
