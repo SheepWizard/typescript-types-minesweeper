@@ -24,16 +24,16 @@ function addPlay(x: number, y: number, flag: boolean) {
     return;
   }
   plays.push([x, y, flag]);
-  start(app);
+  start();
 }
 
 function getSettings() {
-  return `type Settings = {
+  return `{
     rows: ${settings.rows};
     columns: ${settings.columns};
     mines: ${settings.mines};
     seed: ${settings.seed};
-  };`;
+  }`;
 }
 function getPlays() {
   let board = "MakeBoard";
@@ -55,7 +55,8 @@ function getPlays() {
 const project = new Project({ useInMemoryFileSystem: true });
 const sourceFile = project.createSourceFile(
   "files.ts",
-  `${output} ${getSettings()} 
+  `${output} 
+  type Settings = ${getSettings()};
   type State = MakeBoard;
   type Dislay = DrawBoard<State>;
   const d: Dislay;`
@@ -76,9 +77,8 @@ function run() {
   return filtered;
 }
 
-function start(app: HTMLElement) {
+function start() {
   app.innerHTML = "";
-  document.getElementById("code")!.innerHTML = "";
   const result = run();
   result.forEach((a, i1) => {
     const div = document.createElement("div");
@@ -135,12 +135,15 @@ function start(app: HTMLElement) {
     });
     app.appendChild(div);
   });
-  const code = document.createElement("p");
-  code.textContent = getPlays();
-  document.getElementById("code")?.appendChild(code);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  start(app);
-  document.getElementById("newGame")?.addEventListener("click", () => {});
+  start();
+  document.getElementById("newGame")?.addEventListener("click", () => {
+    settings.seed = getSeed();
+    const settingsType = sourceFile.getTypeAlias("Settings");
+    settingsType?.setType(getSettings());
+    plays.splice(0, plays.length);
+    start();
+  });
 });
