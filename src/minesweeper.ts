@@ -9,28 +9,45 @@ import {
   DivFloor,
 } from "./Util";
 
-type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "F" | "M";
+type CellVal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "M";
 
 type Cell = {
   num: CellVal;
   open: boolean;
+  flagged: boolean;
   neighbours: number[];
 };
 
 type UpdateCellVal<C extends Cell, Val extends CellVal> = {
   num: Val;
   open: C["open"];
+  flagged: C["flagged"];
   neighbours: C["neighbours"];
 } extends Cell
-  ? { num: Val; open: C["open"]; neighbours: C["neighbours"] }
+  ? { num: Val; open: C["open"]; flagged: false; neighbours: C["neighbours"] }
   : never;
 
 type UpdateCellOpen<C extends Cell> = {
   num: C["num"];
   open: true;
+  flagged: C["flagged"];
   neighbours: C["neighbours"];
 } extends Cell
-  ? { num: C["num"]; open: true; neighbours: C["neighbours"] }
+  ? { num: C["num"]; open: true; flagged: false; neighbours: C["neighbours"] }
+  : never;
+
+type UpdateCellFlag<C extends Cell, Flagged extends boolean> = {
+  num: C["num"];
+  open: C["open"];
+  flagged: C["flagged"];
+  neighbours: C["neighbours"];
+} extends Cell
+  ? {
+      num: C["num"];
+      open: C["open"];
+      flagged: Flagged;
+      neighbours: C["neighbours"];
+    }
   : never;
 
 type UpdateCellList<
@@ -59,11 +76,24 @@ type OpenNeighbourCells<
   >
 > = Count extends Length<Neighbours>
   ? Cells
+  : Cells[Neighbours[Count]]["flagged"] extends true
+  ? OpenNeighbourCells<Cells, Neighbours, Add<Count, 1>>
   : OpenNeighbourCells<
       OpenCell<Cells, CurrIndex[0], CurrIndex[1]>,
       Neighbours,
       Add<Count, 1>
     >;
+
+type FlagCell<
+  Cells extends Cell[],
+  Row extends number,
+  Column extends number,
+  CurrIndex extends number = IndexGet<Row, Column>
+> = Cells[CurrIndex]["open"] extends true
+  ? Cells
+  : Cells[CurrIndex]["flagged"] extends true
+  ? UpdateCellList<Cells, UpdateCellFlag<Cells[CurrIndex], false>, CurrIndex>
+  : UpdateCellList<Cells, UpdateCellFlag<Cells[CurrIndex], true>, CurrIndex>;
 
 type OpenCell<
   Cells extends Cell[],
@@ -71,6 +101,8 @@ type OpenCell<
   Column extends number,
   CurrIndex extends number = IndexGet<Row, Column>
 > = Cells[CurrIndex]["open"] extends true
+  ? Cells
+  : Cells[CurrIndex]["flagged"] extends true
   ? Cells
   : Cells[CurrIndex]["num"] extends 0
   ? OpenNeighbourCells<
@@ -81,7 +113,9 @@ type OpenCell<
   ? UpdateCellList<Cells, UpdateCellOpen<Cells[CurrIndex]>, CurrIndex>
   : Cells;
 
-type DrawCell<C extends Cell> = C["open"] extends false
+type DrawCell<C extends Cell> = C["flagged"] extends true
+  ? "F"
+  : C["open"] extends false
   ? "⬜"
   : C["num"] extends "M"
   ? "💣"
@@ -224,6 +258,7 @@ type MapCells<
         {
           num: 0;
           open: false;
+          flagged: false;
           neighbours: GetNeighbours<
             Length<Acc>,
             CurrIndex[0],
@@ -305,7 +340,7 @@ type Settings = {
   seed: 1;
 };
 
-type State = OpenCell<MakeBoard, 2, 0>;
+type State = FlagCell<OpenCell<FlagCell<MakeBoard, 1, 1>, 1, 1>, 1, 1>;
 
 type Dislay = DrawBoard<State>;
 

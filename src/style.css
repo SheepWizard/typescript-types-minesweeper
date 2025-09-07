@@ -1,5 +1,7 @@
 /* 1. Use a more-intuitive box-sizing model */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -24,18 +26,31 @@ body {
 }
 
 /* 6. Improve media defaults */
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
 
 /* 7. Inherit fonts for form controls */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
 
 /* 8. Avoid text overflows */
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
   color: white;
   font-family: monospace;
@@ -53,14 +68,20 @@ p {
   font-size: 18px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   text-wrap: balance;
 }
 
 /*
   10. Create a root stacking context
 */
-#root, #__next {
+#root,
+#__next {
   isolation: isolate;
 }
 
@@ -89,7 +110,7 @@ button {
   flex-direction: column;
   align-items: center;
   height: 100%;
-   width: min(500px, 100% - 16px);
+  width: min(500px, 100% - 16px);
   margin-inline: auto;
 }
 
@@ -112,11 +133,11 @@ button {
   &[data-state="hidden"] {
     background-image: url("/cell_hidden.png");
   }
-  
+
   &:not([data-state="hidden"]) {
     cursor: default;
   }
-  
+
   &[data-state="1"] {
     background-image: url("/cell_1.png");
   }
@@ -146,5 +167,8 @@ button {
   }
   &[data-state="mine"] {
     background-image: url("/cell_mine.png");
-  } 
+  }
+  &[data-state="flag"] {
+    background-image: url("/cell_flag.png");
+  }
 }

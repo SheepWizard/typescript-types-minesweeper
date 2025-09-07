@@ -4,7 +4,7 @@ import output from "./raw";
 
 import { Project, TypeFormatFlags } from "ts-morph";
 
-const plays: Array<[number, number]> = [];
+const plays: Array<[number, number, boolean]> = [];
 const app = document.getElementById("app")!;
 
 function getSeed() {
@@ -18,12 +18,12 @@ const settings = {
   seed: getSeed(),
 };
 
-function addPlay(x: number, y: number) {
-  const found = plays.some(([x2, y2]) => x2 === x && y2 === y);
+function addPlay(x: number, y: number, flag: boolean) {
+  const found = plays.some(([x2, y2, flag]) => x2 === x && y2 === y && !flag);
   if (found) {
     return;
   }
-  plays.push([x, y]);
+  plays.push([x, y, flag]);
   start(app);
 }
 
@@ -38,9 +38,15 @@ function getSettings() {
 function getPlays() {
   let board = "MakeBoard";
   plays.forEach((x) => {
-    board = `
-      OpenCell<${board}, ${x[0]}, ${x[1]}>
-    `;
+    if (x[2]) {
+      board = `
+        FlagCell<${board}, ${x[0]}, ${x[1]}>
+      `;
+    } else {
+      board = `
+        OpenCell<${board}, ${x[0]}, ${x[1]}>
+      `;
+    }
   });
 
   return `${board}`;
@@ -72,6 +78,7 @@ function run() {
 
 function start(app: HTMLElement) {
   app.innerHTML = "";
+  document.getElementById("code")!.innerHTML = "";
   const result = run();
   result.forEach((a, i1) => {
     const div = document.createElement("div");
@@ -113,14 +120,24 @@ function start(app: HTMLElement) {
         case "M":
           button.setAttribute("data-state", "mine");
           break;
+        case "F":
+          button.setAttribute("data-state", "flag");
+          break;
       }
       button.addEventListener("click", () => {
-        addPlay(i1, i2);
+        addPlay(i1, i2, false);
+      });
+      button.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        addPlay(i1, i2, true);
       });
       div.appendChild(button);
     });
     app.appendChild(div);
   });
+  const code = document.createElement("p");
+  code.textContent = getPlays();
+  document.getElementById("code")?.appendChild(code);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
