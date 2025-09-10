@@ -146,4 +146,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     plays.splice(0, plays.length);
     start();
   });
+  (
+    document.getElementById("rows") as HTMLInputElement
+  ).value = `${settings.rows}`;
+  (
+    document.getElementById("columns") as HTMLInputElement
+  ).value = `${settings.columns}`;
+  (
+    document.getElementById("mines") as HTMLInputElement
+  ).value = `${settings.mines}`;
+  document.getElementById("rows")?.addEventListener("change", (e) => {
+    settings.rows = Number((e.currentTarget as HTMLInputElement).value);
+  });
+  document.getElementById("columns")?.addEventListener("change", (e) => {
+    settings.columns = Number((e.currentTarget as HTMLInputElement).value);
+  });
+  document.getElementById("mines")?.addEventListener("change", (e) => {
+    settings.mines = Number((e.currentTarget as HTMLInputElement).value);
+  });
 });

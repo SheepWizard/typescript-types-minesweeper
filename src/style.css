@@ -1,16 +1,13 @@
-/* 1. Use a more-intuitive box-sizing model */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* 2. Remove default margin */
 * {
   margin: 0;
 }
 
-/* 3. Enable keyword animations */
 @media (prefers-reduced-motion: no-preference) {
   html {
     interpolate-size: allow-keywords;
@@ -28,7 +25,6 @@ body {
   background-color: rgb(44, 44, 44);
 }
 
-/* 6. Improve media defaults */
 img,
 picture,
 video,
@@ -38,7 +34,6 @@ svg {
   max-width: 100%;
 }
 
-/* 7. Inherit fonts for form controls */
 input,
 button,
 textarea,
@@ -46,7 +41,6 @@ select {
   font: inherit;
 }
 
-/* 8. Avoid text overflows */
 p,
 h1,
 h2,
@@ -84,9 +78,6 @@ h6 {
   text-wrap: balance;
 }
 
-/*
-  10. Create a root stacking context
-*/
 #root,
 #__next {
   isolation: isolate;
@@ -110,6 +101,18 @@ button {
   width: min(700px, 100% - 16px);
   margin-inline: auto;
   text-align: center;
+}
+
+.settings {
+  &:popover-open {
+    display: flex;
+    flex-direction: column;
+  }
+  color: white;
+  background-color: rgb(44, 44, 44);
+  border: solid #737373 4px;
+  margin-left: 10px;
+  margin-top: 10px;
 }
 
 .app {
@@ -143,9 +146,12 @@ button {
 
 .footer {
   display: flex;
-  flex-direction: column;
-  justify-content: end;
-  font-size: 14px;
+  justify-content: space-between;
+  margin-block-end: 6px;
+  margin-inline: 6px;
+  p {
+    font-size: 14px;
+  }
 }
 
 .cellButton {
